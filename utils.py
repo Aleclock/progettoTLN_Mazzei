@@ -1,9 +1,9 @@
 
 """
 Load document in path line by line
-Input:
+Input:  
     path: file path
-Output:
+Output: 
     sentences: list of sentences
 """
 def loadSentences(path):
@@ -12,4 +12,4 @@ def loadSentences(path):
         for line in file.readlines():
             sentences.append(line.replace("\n", ""))
     file.close()
-    return sentences
+    return sentences[:4]
