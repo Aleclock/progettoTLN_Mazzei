@@ -1,0 +1,27 @@
+{
+    "subj": {
+        "pred": "opportunità",
+        "tag": "N",
+        "num": "sg",
+        "gen": "f"
+    },
+    "verb": {
+        "pred": "volare",
+        "tag": "IV",
+        "num": "sg",
+        "tns": "ger"
+    },
+    "compl": [
+        {
+            "pred": "qui",
+            "tag": "N",
+            "num": "sg",
+            "gen": "m",
+            "loc": true
+        },
+        {
+            "pred": "da",
+            "tag": "PRP"
+        }
+    ]
+}

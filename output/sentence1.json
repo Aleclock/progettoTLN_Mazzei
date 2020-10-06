@@ -1,0 +1,32 @@
+{
+    "subj": {
+        "pred": "prezzo",
+        "tag": "N",
+        "num": "sg",
+        "gen": "f"
+    },
+    "verb": {
+        "pred": "essere",
+        "tag": "IV",
+        "num": "sg",
+        "tns": "pres"
+    },
+    "compl": [
+        {
+            "pred": "testa",
+            "tag": "N",
+            "num": "sg",
+            "gen": "f"
+        },
+        {
+            "pred": "sopra",
+            "tag": "PRP",
+            "loc": true
+        },
+        {
+            "pred": "mia",
+            "tag": "JJ",
+            "num": "sg"
+        }
+    ]
+}

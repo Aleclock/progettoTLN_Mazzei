@@ -5,19 +5,22 @@ from nltk.sem.logic import ExistsExpression, AndExpression, ApplicationExpressio
 """
 Transform a valid FOL formula in a simpleNLG sentence plan
 Input:
-    s: sentence
     formula: semantic formula of sentence (FOL)
     tree: tree
+    lex: lexical dictionary (eng to ita translation)
 """
-def getSentencePlan(s, formula, tree):
+def getSentencePlan(formula, tree, lex):
     print ("FOL: " + str(formula))
     template = getFormulaTemplate(str(formula))
     semTerms = getSemanticTerms(formula.term)
 
     print ("\nSemantic terms:\n" + str(semTerms) + "\n")
 
+    plan = {}
+
     # ---------------------------------------------
     # ----  TEMPLATE 0
+    # ----  exists x.(obj(x), verb(subj,x))
     # ---------------------------------------------
     if template == 0:
         verb_pred = semTerms[-1] # verb predicate
@@ -30,6 +33,7 @@ def getSentencePlan(s, formula, tree):
         verb = match_pred_pos(tree, verb_pred)
         subj = match_pred_pos(tree, subj)
 
+        # TODO capire perchè lo faccio qui
         obj_occurrency.remove(obj)
         if verb in obj_occurrency: # il varbo comparirà sia in obj che in verb (xke è una funzione del tipo f(x,y))
             obj_occurrency.remove(verb)
@@ -39,6 +43,10 @@ def getSentencePlan(s, formula, tree):
         print ("+ subj " + str(subj))
         print ("+ obj " + str(obj))
         print ("+++++++++++++++")
+
+        plan["subj"] = subj
+        plan["verb"] = verb
+        plan["obj"] = obj
 
     # ---------------------------------------------
     # ----  TEMPLATE 1
@@ -56,13 +64,13 @@ def getSentencePlan(s, formula, tree):
 
         verb = match_pred_pos(tree, verb_pred)
         subj = list(filter(lambda x: 'N' == x['tag'], subj_occurrency))[0]
-        subj_occurrency.remove(subj)
+        subj_occurrency.remove(subj) # TODO capire perchè lo faccio
 
-        v_notVisited = getAllVariables(semTerms) - variablesVisited # variables not visited yet
-        vcompl = [] # complement variables
+        v_notVisited = getAllVariables(semTerms) - variablesVisited # variables not visited yet (complement variables)
+        compl = [] # complement
         for v in v_notVisited: # for each complement variable
             for occ in findOccurencies(tree, semTerms, v):
-                vcompl.append(occ)
+                compl.append(occ)
                 # il complemento comparirà sia in subj che in compl (xke è una funzione del tipo f(x,y))
                 # occorre rimuoverla da subj
                 if occ in subj_occurrency:
@@ -72,8 +80,12 @@ def getSentencePlan(s, formula, tree):
         print ("\n+++++++++++++++")
         print ("+ verb " + str(verb))
         print ("+ subj " + str(subj))
-        print ("+ compl " + str(vcompl))
+        print ("+ compl " + str(compl))
         print ("+++++++++++++++")
+
+        plan["subj"] = subj
+        plan["verb"] = verb
+        plan["compl"] = compl
 
     # ---------------------------------------------
     # ----  TEMPLATE 2
@@ -82,12 +94,19 @@ def getSentencePlan(s, formula, tree):
         variablesVisited = set()
 
         verb_pred = semTerms[3]
+        print ("verb_pred " + str(verb_pred))
         event = str(verb_pred.args[0])
+
+        print ("event " + str(event))
 
         mod_verb = findOccurencies(tree, semTerms, event) # predicati in cui compare la variabile del verbo (x)
 
+        print ("mod_verb " + str(mod_verb))
+
         variablesVisited.add(event)
         verb = match_pred_pos(tree, verb_pred)
+
+        print ("verb " + str(verb))
 
         mod_verb.remove(verb)
 
@@ -99,11 +118,10 @@ def getSentencePlan(s, formula, tree):
         mod_subj.remove(subj)
 
         v_notVisited = getAllVariables(semTerms) - variablesVisited # variables not visited yet
-        vcompl = [] # complement variables
+        compl = [] # complement variables
         for v in v_notVisited: # for each complement variable
             for occ in findOccurencies(tree, semTerms, v):
-                print (occ)
-                vcompl.append(occ)
+                compl.append(occ)
                 # il complemento comparirà sia in verb che in compl (xke è una funzione del tipo f(x,y))
                 # occorre rimuoverla da verb
                 if occ in mod_verb:
@@ -112,18 +130,33 @@ def getSentencePlan(s, formula, tree):
         print ("\n+++++++++++++++")
         print ("+ verb " + str(verb))
         print ("+ subj " + str(subj))
-        print ("+ compl " + str(vcompl))
+        print ("+ compl " + str(compl))
         print ("+++++++++++++++")
 
+        plan["subj"] = subj
+        plan["verb"] = verb
+        plan["compl"] = compl
+       
+    return translatePlan(lex, plan)
 
 
-    """existentials = [e.name for e in getExistentialQuantifier(formula)] # get existential quantifier
-    unary = getUnaryRelations(formula)  # get unary relations
-    binary = getBinaryRelations(formula)    # get binary relations
-    print ("*** existentials" + str(existentials))
-    print ("*** unary" + str(unary))
-    print ("*** binary" + str(binary))"""
-    return s
+"""
+Translate given arguments using lex dictionary
+Input:
+    lex: lexical dictionary (eng to ita translation)
+    plan: plan to translate ("pred" attributes)
+Output:
+    translated plan
+"""
+def translatePlan(lex, plan):
+    for p in plan:
+        if type(plan[p]) is list: # like complement
+            for x in plan[p]:
+                index = plan[p].index(x)
+                plan[p][index]["pred"] = lex[x["pred"]]
+        else:
+            plan[p]["pred"] = lex[plan[p]["pred"]]
+    return plan
 
 """
 Detect which template have formula
@@ -185,6 +218,7 @@ Output:
 """
 def transitiveVerbArguments(verb):
     return list(map(lambda x: x.variable.name, verb.args))
+
 
 """
 Calculate the subj of intransitive verb (must see all tree to detect subj)
@@ -256,6 +290,8 @@ def match_pred_pos(tree, term):
 
     terminals = [i for i in tree.subtrees()]  # ritorna tutti i possibili sottoalberi
 
+    # https://docs.python.org/3/library/re.html
+    # https://docs.python.org/3/howto/regex.html
     # re.IGNORECASE: Perform case-insensitive matching
     # group() returns the substring that was matched by the RE
     terminals = list(
@@ -276,6 +312,7 @@ def match_pred_pos(tree, term):
                 node['gen'] = t.label()['GEN']
             if 'LOC' in t.label().keys():
                 node['loc'] = True
+    
             return node
     return None
 

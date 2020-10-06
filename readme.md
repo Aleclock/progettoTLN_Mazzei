@@ -64,7 +64,7 @@ Il template 0 è del tipo
 exists x.(obj(x), verb(subj,x))
 ```
 
-quindi il verbo corrisponde all'ultimo predicato della formula. Sapendo che il verbo è transitivo, gli argomenti del verbo vengono determinati con la funzione `transitiveVerbArguments()`, la quale ritorna la lista dei nomi degli argomenti del predicato corrispondente al verbo. Mentre l'argomento soggetto (`sobj`) risulta essere il nome del predicato, l'argomento dell'oggetto è una variabile. Per questo motivo risulta necessario cercare tra tutti i predicati della formula quelli che contengono la variabile `obj` (funzione `findOccurencies()`).
+quindi il verbo corrisponde all'ultimo predicato della formula. Sapendo che il verbo è transitivo, gli argomenti del verbo vengono determinati con la funzione `transitiveVerbArguments()`, la quale ritorna la lista dei nomi degli argomenti del predicato corrispondente al verbo. Mentre l'argomento soggetto (`sobj`) risulta essere il nome del predicato, l'argomento dell'oggetto è una variabile. Per questo motivo risulta necessario cercare tra tutti i predicati della formula quelli che contengono la variabile `vobj` (funzione `findOccurencies()`).
 
 La funzione `findOccurencies()` cerca seleziona, tra tutti i predicati della formula, quelli che hanno come argomenti la variabile da cercare (`var`). Sucecssivamente per ogni predicato contenente l'oggetto, viene fatto un matching tra il predicato e il corrispondente part-of-speech tag. Quest'ultima operazione viene fatta con la funzione `match_pred_pos()`, la quale inizialmente determina il nome del predicato e poi calcola tutti i possibili alberi dell'albero sintattico iniziale (`tree.subtrees()`). Tra tutti i possibili sotto-alberi, vengono selezionati solo quelli che corrispondono alle foglie (attraverso una ricerca sulle espressioni regolari)
 
@@ -73,7 +73,75 @@ terminals = list(filter(
     lambda x: re.search("\\'(.*)\\'", str(x.label()).split('\n')[0], re.IGNORECASE).group(1) in leaves, terminals)) 
 ```
 
-Per ogni foglia, nel caso in cui il nome del predicato corrisponda al lemma del predicato foglia, viene creato un dizionario contenente alcune informazioni relative alla sintassi e alla semantica.
+Per ogni foglia, nel caso in cui il nome del predicato corrisponda al lemma del predicato foglia, viene creato un dizionario contenente alcune informazioni relative alla sintassi e alla semantica (nome del predicato, pos tag, numero, genere, locativo).
+
+<br/>
+
+Siccome l'oggetto di un verbo ha come POS tag `N` (*nome*), tra la lista di predicati contenenti la variabile oggetto (`vobj`) viene selezionato solo quello il cui TAG corrisponde al nome. Infine si determinano, come fatto con l'oggetto, le informazioni sintattiche del verbo e del soggetto attraverso la funzione `match_pred_pos()`.
+
+<br/><br/>
+
+### **Template 1**
+
+Il template 1 è del tipo
+
+```
+exists x.(exists e.(VP(e), exists z.(subj(x), complement(x,z))))
+```
+
+quindi il verbo corrisponde al primo predicato della formula. Sapendo che il verbo è intransitivo, il soggetto viene determinato con la funzione `intranstitiveVerbSubj()`, la quale determina la variabile associata al soggetto. Questa funzione seleziona tra i termini semantici della formula il predicato il cui nome è "agent". Il predicato corrispondente al soggetto risulta essere il primo predicato "agent" nella formula. Per determinare il nome del predicato associato al soggetto è necessario cercare tra tutti i predicati della formula quelli che contengono la variabile `vsubj` tramite la funzione `findOccurencies()`. Il predicato corrispondente al soggetto risulta essere quello il cui tag sintattico corrisponde a *Noun*.
+Dopo aver determinato il verbo e il soggetto, si ottengono le rispettive informazini sintattiche attraverso la funzione `match_pred_pos()`.
+
+Per determinare il predicato corrispondente al complemento, si calcolano inizialmente tutte le variabili presenti nella formula (funzione `getAllVariables()`). Dalla lista totale delle variabili vengono rimosse quelle corrispondenti al verbo e al soggetto. Avendo determinato la variabile del complemento, è possibile determinare tutti i predicati in cui la variabile compare (attraverso `findOccurencies()`)
+
+<br/><br/>
+
+### **Template 2**
+
+Il template 2 è del tipo
+
+```
+exists x.(subj(x), exists e.(VP(e), exists y.(Pred(e,y))))
+```
+
+quindi il verbo corrisponde al quarto predicato della formula. Sapendo che il verbo è intransitivo, il soggetto viene determinato con la funzione `intranstitiveVerbSubj()`, la quale determina la variabile associata al soggetto. Questa funzione seleziona tra i termini semantici della formula il predicato il cui nome è "agent". Il predicato corrispondente al soggetto risulta essere il primo predicato "agent" nella formula. Per determinare il nome del predicato associato al soggetto è necessario cercare tra tutti i predicati della formula quelli che contengono la variabile `vsubj` tramite la funzione `findOccurencies()`. Il predicato corrispondente al soggetto risulta essere quello il cui tag sintattico corrisponde a *Noun*.
+
+Dopo aver determinato il verbo e il soggetto, si ottengono le rispettive informazini sintattiche attraverso la funzione `match_pred_pos()`.
+
+Come nel caso precedente (template 1), vengono determinate tutte le variabili presenti nella formula (`getAllVariables()`) e, tra queste, vengono rimosse quelle corrispondenti al verbo e al soggetto. La variabile rimanente corrisponde al complemento e quindi vengono calcolati tutti i predicati contententi la variabile (`findOccurencies()`).
+
+<br/><br/>
+
+In base alle tre frasi in input, il risultato di questa fase è il seguente:
+
+```
+Sentence: you are imagining things
+FOL: exists z2.(thing(z2) & image(you,z2))
+
+verb {'pred': 'image', 'tag': 'TV', 'num': 'sg', 'tns': 'ger'}
+subj {'pred': 'you', 'tag': 'PRP', 'num': 'sg'}
+obj {'pred': 'thing', 'tag': 'N', 'num': 'pl', 'gen': 'f'}
+```
+
+```
+Sentence: there is a price on my head
+FOL: exists x.(exists e.(presence(e) & agent(e,x)) & exists z5.(my(z5) & head(z5) & price(x) & on(x,z5)))
+
+verb {'pred': 'presence', 'tag': 'IV', 'num': 'sg', 'tns': 'pres'}
+subj {'pred': 'price', 'tag': 'N', 'num': 'sg', 'gen': 'f'}
+compl [
+    {'pred': 'head', 'tag': 'N', 'num': 'sg', 'gen': 'f'}, 
+    {'pred': 'on', 'tag': 'PRP', 'loc': True}, {'pred': 'my', 'tag': 'JJ', 'num': 'sg'}]
+```
+
+```
+Sentence: your big opportunity is flying out of here
+FOL: exists x.(your(x) & big(x) & opportunity(x) & exists e.(fly(e) & agent(e,x) & out(e) & exists y.(from(e,y) & here(y))))
+
+verb {'pred': 'fly', 'tag': 'IV', 'num': 'sg', 'tns': 'ger'}
+subj {'pred': 'opportunity', 'tag': 'N', 'num': 'sg', 'gen': 'f'}
+compl [{'pred': 'here', 'tag': 'N', 'num': 'sg', 'gen': 'm', 'loc': True}, {'pred': 'from', 'tag': 'PRP'}]
+```
 
 <br/><br/>
 

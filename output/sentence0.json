@@ -1,0 +1,19 @@
+{
+    "subj": {
+        "pred": "tu",
+        "tag": "PRP",
+        "num": "sg"
+    },
+    "verb": {
+        "pred": "immaginare",
+        "tag": "TV",
+        "num": "sg",
+        "tns": "ger"
+    },
+    "obj": {
+        "pred": "cosa",
+        "tag": "N",
+        "num": "pl",
+        "gen": "f"
+    }
+}

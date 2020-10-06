@@ -1,5 +1,6 @@
 import nltk
 from nltk import load_parser
+import requests
 
 """
 grammar (simple-sem.fcfg) contains a small set of rules for parsing and translating simple examples of the kind that we have been looking at.

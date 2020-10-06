@@ -2,6 +2,9 @@ from nltk import Tree
 from nltk.draw.util import CanvasFrame
 from nltk.draw import TreeWidget
 import os
+import pandas as pd
+import csv
+import json 
 
 """
 Load document in path line by line
@@ -16,7 +19,24 @@ def loadSentences(path):
         for line in file.readlines():
             sentences.append(line.replace("\n", "").lower())
     file.close()
-    return sentences[:4]
+    return sentences
+
+"""
+Load csv file and create a lexicon dictionary
+Input:
+    path: path file
+Output:
+    lexicon dictionary  {"eng_term", "ita_term"}
+"""
+def loadLexicon(path):
+    with open(path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+        return {rows[0]:rows[1] for rows in csv_reader}
+
+def savePlanToJSON(planT, index):
+    #json_object = json.dumps(planT, indent = 4)   
+    with open("./output/sentence" + str(index) + ".json", 'w', encoding='utf-8') as f:
+        json.dump(planT, f, ensure_ascii=False, indent=4)
 
 def saveTreeImage(tree):
     cf = CanvasFrame()

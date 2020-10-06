@@ -7,8 +7,8 @@ os.chdir("/Users/aleclock/Desktop/uni/TLN/mazzei/progettoTLN_Mazzei")
 
 def main():
     sentences = loadSentences("./resources/sentences.txt")  # Al momento prende le prime quattro frasi (TODO modificare)
+    lex = loadLexicon("./resources/eng_ita_lex.csv")
 
-    print (aa[0])
     for s in sentences[:]:
         print ("Sentence: " + s)
 
@@ -31,10 +31,13 @@ def main():
         # ---------------------------------------------
         # ----  Formula to sentence plan
         # ---------------------------------------------
-        #translation = getSentencePlan(s, formula, tree)
+        planT = getSentencePlan(formula, tree, lex) # Translated plan
+
+        savePlanToJSON(planT, sentences.index(s))
 
         # ---------------------------------------------
         # ----  Sentence plan to traslated sentence
         # ---------------------------------------------
+
         print ("\n---\n")
 main()
