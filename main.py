@@ -17,6 +17,7 @@ def main():
         # ---------------------------------------------
 
         tree = parseSentence (s, "./resources/simple-sem.fcfg")
+        
         #saveTreeImage(tree)
         #tree.draw() # https://www.nltk.org/book/ch08.html
         """

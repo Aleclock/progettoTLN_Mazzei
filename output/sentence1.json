@@ -6,18 +6,13 @@
         "gen": "f"
     },
     "verb": {
-        "pred": "essere",
+        "pred": "esistere",
         "tag": "IV",
         "num": "sg",
         "tns": "pres"
     },
+    "obj": {},
     "compl": [
-        {
-            "pred": "testa",
-            "tag": "N",
-            "num": "sg",
-            "gen": "f"
-        },
         {
             "pred": "sopra",
             "tag": "PRP",
@@ -27,6 +22,12 @@
             "pred": "mia",
             "tag": "JJ",
             "num": "sg"
+        },
+        {
+            "pred": "testa",
+            "tag": "N",
+            "num": "sg",
+            "gen": "f"
         }
     ]
 }

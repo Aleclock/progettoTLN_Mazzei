@@ -3,14 +3,32 @@
         "pred": "opportunità",
         "tag": "N",
         "num": "sg",
-        "gen": "f"
+        "gen": "f",
+        "mod": [
+            {
+                "pred": "tua",
+                "tag": "PRP",
+                "num": "sg"
+            },
+            {
+                "pred": "grande",
+                "tag": "JJ"
+            }
+        ]
     },
     "verb": {
         "pred": "volare",
         "tag": "IV",
         "num": "sg",
-        "tns": "ger"
+        "tns": "ger",
+        "mod": [
+            {
+                "pred": "via",
+                "tag": "ADV"
+            }
+        ]
     },
+    "obj": {},
     "compl": [
         {
             "pred": "qui",

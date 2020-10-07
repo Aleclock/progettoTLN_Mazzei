@@ -44,9 +44,7 @@ def getSentencePlan(formula, tree, lex):
         print ("+ obj " + str(obj))
         print ("+++++++++++++++")
 
-        plan["subj"] = subj
-        plan["verb"] = verb
-        plan["obj"] = obj
+        plan = createPlan(subj, verb, obj, {}, None, obj_occurrency, None)
 
     # ---------------------------------------------
     # ----  TEMPLATE 1
@@ -75,7 +73,7 @@ def getSentencePlan(formula, tree, lex):
                 # occorre rimuoverla da subj
                 if occ in subj_occurrency:
                     subj_occurrency.remove(occ)
-
+        
 
         print ("\n+++++++++++++++")
         print ("+ verb " + str(verb))
@@ -83,9 +81,7 @@ def getSentencePlan(formula, tree, lex):
         print ("+ compl " + str(compl))
         print ("+++++++++++++++")
 
-        plan["subj"] = subj
-        plan["verb"] = verb
-        plan["compl"] = compl
+        plan = createPlan(subj, verb, {}, compl, subj_occurrency, None, None)
 
     # ---------------------------------------------
     # ----  TEMPLATE 2
@@ -127,17 +123,17 @@ def getSentencePlan(formula, tree, lex):
                 if occ in mod_verb:
                     mod_verb.remove(occ)
         
+        
         print ("\n+++++++++++++++")
         print ("+ verb " + str(verb))
         print ("+ subj " + str(subj))
         print ("+ compl " + str(compl))
         print ("+++++++++++++++")
 
-        plan["subj"] = subj
-        plan["verb"] = verb
-        plan["compl"] = compl
+        plan = createPlan(subj, verb, {}, compl, mod_subj, mod_verb, None)
        
     return translatePlan(lex, plan)
+
 
 
 """
@@ -150,12 +146,18 @@ Output:
 """
 def translatePlan(lex, plan):
     for p in plan:
-        if type(plan[p]) is list: # like complement
-            for x in plan[p]:
-                index = plan[p].index(x)
-                plan[p][index]["pred"] = lex[x["pred"]]
-        else:
-            plan[p]["pred"] = lex[plan[p]["pred"]]
+        if plan[p]:
+            if "mod" in plan[p]:
+                for mod in plan[p]["mod"]:
+                    index = plan[p]["mod"].index(mod)
+                    plan[p]["mod"][index]["pred"] = lex[mod["pred"]]
+
+            if type(plan[p]) is list: # like complement
+                for x in plan[p]:
+                    index = plan[p].index(x)
+                    plan[p][index]["pred"] = lex[x["pred"]]
+            else:
+                plan[p]["pred"] = lex[plan[p]["pred"]]
     return plan
 
 """
@@ -347,3 +349,26 @@ def getPredicateLemma(term):
         #print (tag, term, terms)
     terms = list(map(lambda x: x.pred.variable.name, terms))
     return terms[0] if len(terms) > 0 else None
+
+"""
+Create a dictionary containing semantic parts of the sentence
+Input:
+    subj: subject dictionary
+    z
+"""
+def createPlan(subj, verb, obj, compl, mod_subj, mod_verb, mod_compl):
+    plan = {}
+
+    plan["subj"] = subj
+    plan["verb"] = verb
+    plan["obj"] = obj
+    plan["compl"] = compl
+
+    if mod_subj:
+        plan["subj"]["mod"] = mod_subj
+    if mod_verb:
+        plan["verb"]["mod"] = mod_verb
+    if mod_compl: 
+        plan["compl"]["mod"] = mod_compl
+    
+    return plan
