@@ -31,15 +31,15 @@
     "obj": {},
     "compl": [
         {
+            "pred": "da",
+            "tag": "PRP"
+        },
+        {
             "pred": "qui",
             "tag": "N",
             "num": "sg",
             "gen": "m",
             "loc": true
-        },
-        {
-            "pred": "da",
-            "tag": "PRP"
         }
     ]
 }

@@ -1,12 +1,13 @@
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import simplenlg.features.Feature;
-import simplenlg.features.NumberAgreement;
-import simplenlg.features.Tense;
+import simplenlg.features.*;
 import simplenlg.framework.NLGFactory;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.lexicon.italian.ITXMLLexicon;
+import simplenlg.phrasespec.NPPhraseSpec;
+import simplenlg.phrasespec.PPPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
+import simplenlg.phrasespec.VPPhraseSpec;
 import simplenlg.realiser.Realiser;
 import java.util.ArrayList;
 
@@ -16,48 +17,83 @@ public class SentenceRealizer {
         NLGFactory nlgFactory = new NLGFactory(lexIta);
         Realiser realiser = new Realiser();
 
-    public SentenceRealizer(JSONObject sentence) {
-
-    }
+    public SentenceRealizer(JSONObject sentence) {}
 
     public String getRealisedSentence(JSONObject plan) {
 
-        SPhraseSpec clause = nlgFactory.createClause();
+        /** Create subject phrase**/
 
-        JSONObject subj = (JSONObject) plan.get("subj");
-        JSONObject verb = (JSONObject) plan.get("verb");
+        JSONObject subjPred = (JSONObject) plan.get("subj");
+        NPPhraseSpec subject = nlgFactory.createNounPhrase(subjPred.get("pred"));
 
-        clause.setSubject(subj.get("pred"));
-        clause.setVerb(verb.get("pred"));
+        if (subjPred.get("num").equals("pl")) subject.setPlural(true);   // Number cordination
+        if (subjPred.containsKey("gen")) {
+            if (subjPred.get("gen").equals("f")) subject.setFeature(LexicalFeature.GENDER, Gender.FEMININE);
+        }
 
-        setVerbTense(clause, verb.get("tns").toString());
+        if (subjPred.containsKey("mod")) {
+            JSONArray subjMod = (JSONArray) subjPred.get("mod");
+            for (int i = 0; i < subjMod.size(); i++) {
+                subject.addModifier(((JSONObject) subjMod.get(i)).get("pred"));
+            }
+        }
 
+        /** Create verb phrase **/
+
+        JSONObject verbPred = (JSONObject) plan.get("verb");
+        VPPhraseSpec verb = nlgFactory.createVerbPhrase(verbPred.get("pred"));
+
+        if (verbPred.containsKey("mod")) {
+            JSONArray verbMod = (JSONArray) verbPred.get("mod");
+            for (int i = 0; i < verbMod.size(); i++) {
+                verb.addModifier(((JSONObject) verbMod.get(i)).get("pred"));
+            }
+        }
+
+        setVerbTense(verb, verbPred.get("tns").toString());
+
+        SPhraseSpec clause = nlgFactory.createClause(subject, verb); // Specify a sentence
+
+        /** Create obj/compl phrase **/
 
         if (!plan.get("obj").toString().equals("{}")) {
-            JSONObject obj =  (JSONObject) plan.get("obj");
-            clause.setObject(obj.get("pred"));
-            clause.getObject().setFeature(Feature.NUMBER, NumberAgreement.PLURAL);
 
+            JSONObject objPred = (JSONObject) plan.get("obj");
+            NPPhraseSpec obj = nlgFactory.createNounPhrase(objPred.get("pred"));
+
+            if (objPred.get("num").equals("pl")) obj.setPlural(true);   // Number cordination
+
+            // Insert obj modifier
+            if (objPred.containsKey("mod")) {
+                JSONArray objMod = (JSONArray) verbPred.get("mod");
+                for (int i = 0; i < objMod.size(); i++) {
+                    obj.addModifier(((JSONObject) objMod.get(i)).get("pred"));
+                }
+            }
+
+            clause.setObject(obj);
         } else if (!plan.get("compl").toString().equals("{}")) {
+
+            // TODO Prendere il genere del nome presente nel complemento (N) e settare l'aggettivo con il genere corretto
+
             JSONArray compl = (JSONArray) plan.get("compl");
-            ArrayList pp = new ArrayList();
 
             for (int i = 0; i < compl.size(); i++) {
                 JSONObject pred = (JSONObject) compl.get(i);
                 clause.addComplement((String) pred.get("pred"));
             }
         }
+
+        System.out.println((clause.printTree("")));
         return realiser.realiseSentence(clause);
     }
 
-    private void setVerbTense(SPhraseSpec clause, String tense) {
+    private void setVerbTense(VPPhraseSpec clause, String tense) {
         if (tense.equals("pres")) {
             clause.setFeature(Feature.TENSE, Tense.PRESENT);
         } else if (tense.equals("ger")) {
             clause.setFeature(Feature.PROGRESSIVE, true);
             clause.setFeature(Feature.PERFECT, false);
-        } else if (tense.equals("past")) {
-            clause.setFeature(Feature.TENSE, Tense.PAST);
         }
     }
 }

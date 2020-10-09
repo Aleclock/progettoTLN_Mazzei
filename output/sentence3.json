@@ -1,0 +1,27 @@
+{
+    "subj": {
+        "pred": "tu",
+        "tag": "PRP",
+        "num": "sg"
+    },
+    "verb": {
+        "pred": "immaginare",
+        "tag": "TV",
+        "num": "sg",
+        "tns": "ger",
+        "mod": [
+            {
+                "pred": "mia",
+                "tag": "JJ",
+                "num": "sg"
+            }
+        ]
+    },
+    "obj": {
+        "pred": "testa",
+        "tag": "N",
+        "num": "sg",
+        "gen": "f"
+    },
+    "compl": {}
+}
