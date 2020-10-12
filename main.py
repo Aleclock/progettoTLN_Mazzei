@@ -16,8 +16,7 @@ def main():
         # ----  Sentence to formula
         # ---------------------------------------------
 
-        tree = parseSentence (s, "./resources/simple-sem.fcfg")
-        print (tree)
+        tree = parseSentence (s, "./resources/simple-sem1.fcfg")
         
         #saveTreeImage(tree)
         #tree.draw() # https://www.nltk.org/book/ch08.html

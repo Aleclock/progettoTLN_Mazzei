@@ -26,6 +26,7 @@ public class SentenceRealizer {
         JSONObject subjPred = (JSONObject) plan.get("subj");
         NPPhraseSpec subject = nlgFactory.createNounPhrase(subjPred.get("pred"));
 
+
         if (subjPred.get("num").equals("pl")) subject.setPlural(true);   // Number cordination
         if (subjPred.containsKey("gen")) {
             if (subjPred.get("gen").equals("f")) subject.setFeature(LexicalFeature.GENDER, Gender.FEMININE);
@@ -42,6 +43,7 @@ public class SentenceRealizer {
 
         JSONObject verbPred = (JSONObject) plan.get("verb");
         VPPhraseSpec verb = nlgFactory.createVerbPhrase(verbPred.get("pred"));
+        setVerbTense(verb, verbPred.get("tns").toString());
 
         if (verbPred.containsKey("mod")) {
             JSONArray verbMod = (JSONArray) verbPred.get("mod");
@@ -49,8 +51,6 @@ public class SentenceRealizer {
                 verb.addModifier(((JSONObject) verbMod.get(i)).get("pred"));
             }
         }
-
-        setVerbTense(verb, verbPred.get("tns").toString());
 
         SPhraseSpec clause = nlgFactory.createClause(subject, verb); // Specify a sentence
 
@@ -84,7 +84,7 @@ public class SentenceRealizer {
             }
         }
 
-        System.out.println((clause.printTree("")));
+        //System.out.println((clause.printTree("")));
         return realiser.realiseSentence(clause);
     }
 

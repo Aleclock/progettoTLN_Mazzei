@@ -18,11 +18,16 @@ public class Start {
         if (dirListing != null) {
             for (File file : dirListing) {
                 try {
-                    JSONObject plan = jsonReader.readJson(file);
+                    //System.out.println("File: " + file.toString());
 
-                    SentenceRealizer realizer = new SentenceRealizer(plan);
-                    String sentence = realizer.getRealisedSentence(plan);
-                    System.out.println(sentence);
+                    if (file.toString().toLowerCase().endsWith(".json")) {
+                        // TODO verificare che finisca con .json
+                        JSONObject plan = jsonReader.readJson(file);
+
+                        SentenceRealizer realizer = new SentenceRealizer(plan);
+                        String sentence = realizer.getRealisedSentence(plan);
+                        System.out.println(sentence);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

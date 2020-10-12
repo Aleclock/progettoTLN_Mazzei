@@ -30,8 +30,8 @@ def getSentencePlan(formula, tree, lex):
         
         # obj have N pos_tag, others are modifier
         obj = list(filter(lambda x: 'N' == x['tag'], obj_occurrency))[0]
-        verb = match_pred_pos(tree, verb_pred)
-        subj = match_pred_pos(tree, subj)
+        verb = add_pred_pos(tree, verb_pred)
+        subj = add_pred_pos(tree, subj)
 
         # TODO capire perchè lo faccio qui
         obj_occurrency.remove(obj)
@@ -54,22 +54,23 @@ def getSentencePlan(formula, tree, lex):
 
         verb_pred = semTerms[0]
 
-        vsubj = intranstitiveVerbSubj(semTerms, verb_pred) # variable of subject
+        vsubj = intransitiveVerbSubj(semTerms, verb_pred) # variable of subject
         subj_occurrency = findOccurencies(tree, semTerms, vsubj) # find predicates in which subj variable is present
 
         variablesVisited.add(str(verb_pred.args[0])) # str altrimenti esce <EventVariableExpression e> 
         variablesVisited.add(vsubj)
 
-        verb = match_pred_pos(tree, verb_pred)
+        verb = add_pred_pos(tree, verb_pred)
         subj = list(filter(lambda x: 'N' == x['tag'], subj_occurrency))[0]
         subj_occurrency.remove(subj) # TODO capire perchè lo faccio
 
-        v_notVisited = getAllVariables(semTerms) - variablesVisited # variables not visited yet (complement variables)
+        # TODO questo qua sotto corrisponde alla variabile del complemento (vcompl)
+        vcompl = getAllVariables(semTerms) - variablesVisited # variables not visited yet (complement variables)
         compl = [] # complement
-        for v in v_notVisited: # for each complement variable
+        for v in vcompl: # for each complement variable
             for occ in findOccurencies(tree, semTerms, v):
                 compl.append(occ)
-                # il complemento comparirà sia in subj che in compl (xke è una funzione del tipo f(x,y))
+                # il complemento comparirà sia in subj che in compl (perchè è una funzione del tipo f(x,y))
                 # occorre rimuoverla da subj
                 if occ in subj_occurrency:
                     subj_occurrency.remove(occ)
@@ -90,24 +91,17 @@ def getSentencePlan(formula, tree, lex):
         variablesVisited = set()
 
         verb_pred = semTerms[3]
-        print ("verb_pred " + str(verb_pred))
         event = str(verb_pred.args[0])
-
-        print ("event " + str(event))
 
         mod_verb = findOccurencies(tree, semTerms, event) # predicati in cui compare la variabile del verbo (x)
 
-        print ("mod_verb " + str(mod_verb))
-
         variablesVisited.add(event)
-        verb = match_pred_pos(tree, verb_pred)
-
-        print ("verb " + str(verb))
+        verb = add_pred_pos(tree, verb_pred)
 
         mod_verb.remove(verb)
 
         # cerchiamo il soggetto
-        vsubj = intranstitiveVerbSubj(semTerms, verb_pred) # variable of subject
+        vsubj = intransitiveVerbSubj(semTerms, verb_pred) # variable of subject
         variablesVisited.add(vsubj)
         mod_subj = findOccurencies(tree, semTerms, vsubj)
         subj = list(filter(lambda x: 'N' == x['tag'], mod_subj))[0] # subj is the predicate whose tag is N
@@ -233,7 +227,7 @@ Input:
 Output:
     subj variable
 """
-def intranstitiveVerbSubj(terms, verb):
+def intransitiveVerbSubj(terms, verb):
     agent = list(filter(lambda x: x.pred.variable.name == 'agent', terms))[0] # get first "agent" predicates in FOL formula
     subj = agent.args[1].variable.name # subj is the second argument of predicate
     return subj
@@ -263,16 +257,18 @@ Output:
 """
 def findOccurencies(tree, terms, var):
     pred = set()
+    #pred = []
     res = []
 
     # Cerca tra tutti i predicati se hanno come argomento var
     for t in terms: # for each formula terms
-        args = list(map(lambda x: x.variable.name, t.args))
+        args = set(map(lambda x: x.variable.name, t.args))
         if var in args:
             pred.add(t)
+            #pred.append(t)
     
     for p in pred:
-        node = match_pred_pos(tree, p)
+        node = add_pred_pos(tree, p)
         if node is not None and not res.__contains__(node):
             res.append(node)
 
@@ -286,11 +282,12 @@ Input
 Output:
     nodo con l'informazione del PoS-Tag
 """
-def match_pred_pos(tree, term):
+def add_pred_pos(tree, term):
     leaves = ['TV', 'IV', 'DTV', 'N', 'JJ', 'PropN', 'Det', 'EX', 'PRP', 'AUX', 'CP', 'ADV'] # POS tag of leaves
     pred_name = term.pred.variable.name if hasattr(term, 'pred') else term # get predicate name
 
     terminals = [i for i in tree.subtrees()]  # ritorna tutti i possibili sottoalberi
+    #print (terminals)
 
     # https://docs.python.org/3/library/re.html
     # https://docs.python.org/3/howto/regex.html
@@ -330,23 +327,18 @@ def getPredicateLemma(term):
     if tag == 'TV': # Transitive verb
         term = term.label()['SEM'].term
         terms = getSemanticTerms(term)
-        #print (tag, term, terms)
         terms = list(map(lambda x: x.argument.term, terms))
     elif tag == 'PRP' and 'PERS' in term.label().keys():
         term = term.label()['SEM'].term
-        #print (tag, term, term.argument.variable.name)
         return term.argument.variable.name
     elif tag == 'PRP' and 'LOC' in term.label().keys():
         term = getSemanticTerms(term.label()['SEM'].term)[0]
-        #print (tag, term, term.argument.term.second.pred.variable.name)
         return term.argument.term.second.pred.variable.name
     elif tag == 'PropN':
-        #print (tag, term.label()['SEM'].term.argument.variable.name)
         return term.label()['SEM'].term.argument.variable.name
     else:
         term = term.label()['SEM'].term
         terms = getSemanticTerms(term)
-        #print (tag, term, terms)
     terms = list(map(lambda x: x.pred.variable.name, terms))
     return terms[0] if len(terms) > 0 else None
 

@@ -6,13 +6,13 @@
         "gen": "f",
         "mod": [
             {
+                "pred": "grande",
+                "tag": "JJ"
+            },
+            {
                 "pred": "tua",
                 "tag": "PRP",
                 "num": "sg"
-            },
-            {
-                "pred": "grande",
-                "tag": "JJ"
             }
         ]
     },
