@@ -14,14 +14,14 @@
     "obj": {},
     "compl": [
         {
-            "pred": "mia",
-            "tag": "JJ",
-            "num": "sg"
-        },
-        {
             "pred": "sopra",
             "tag": "PRP",
             "loc": true
+        },
+        {
+            "pred": "mia",
+            "tag": "JJ",
+            "num": "sg"
         },
         {
             "pred": "testa",
