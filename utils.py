@@ -33,15 +33,24 @@ def loadLexicon(path):
         csv_reader = csv.reader(csv_file, delimiter=';')
         return {rows[0]:rows[1] for rows in csv_reader}
 
+"""
+Save sentence plan as a JSON
+Input:
+    planT: translated sentence plan
+    index: number of sentence (set file name)
+"""
 def savePlanToJSON(planT, index):
-    #json_object = json.dumps(planT, indent = 4)   
     with open("./output/sentence" + str(index) + ".json", 'w', encoding='utf-8') as f:
         json.dump(planT, f, ensure_ascii=False, indent=4)
 
-def saveTreeImage(tree):
+"""
+Print semantic tree 
+Input:
+    tree: semantic tree
+"""
+def printTreeImage(tree):
     cf = CanvasFrame()
-    #t = Tree.fromstring('(S (NP this tree) (VP (V is) (AdjP pretty)))')
     tc = TreeWidget(cf.canvas(),tree)
-    cf.add_widget(tc,30,30) # (10,10) offsets
+    cf.add_widget(tc,30,30) # 30 offset
     cf.print_to_file('output.ps')
     cf.destroy()

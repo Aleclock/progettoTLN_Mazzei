@@ -1,10 +1,4 @@
 import org.json.simple.JSONObject;
-import simplenlg.framework.*;
-import simplenlg.lexicon.*;
-import simplenlg.lexicon.italian.*;
-import simplenlg.realiser.*;
-import simplenlg.phrasespec.*;
-import simplenlg.features.*;
 
 import java.io.File;
 
@@ -21,7 +15,6 @@ public class Start {
                     //System.out.println("File: " + file.toString());
 
                     if (file.toString().toLowerCase().endsWith(".json")) {
-                        // TODO verificare che finisca con .json
                         JSONObject plan = jsonReader.readJson(file);
 
                         SentenceRealizer realizer = new SentenceRealizer(plan);

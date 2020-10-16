@@ -6,39 +6,34 @@ import os
 os.chdir("/Users/aleclock/Desktop/uni/TLN/mazzei/progettoTLN_Mazzei")
 
 def main():
-    sentences = loadSentences("./resources/sentences.txt")  # Al momento prende le prime quattro frasi (TODO modificare)
+    sentences = loadSentences("./resources/sentences.txt")
     lex = loadLexicon("./resources/eng_ita_lex.csv")
 
-    for s in sentences[:]:
+    for s in sentences:
         print ("Sentence: " + s)
 
         # ---------------------------------------------
         # ----  Sentence to formula
         # ---------------------------------------------
 
-        tree = parseSentence (s, "./resources/simple-sem1.fcfg")
+        tree = parseSentence (s, "./resources/simple-sem.fcfg")
         
-        #saveTreeImage(tree)
-        #tree.draw() # https://www.nltk.org/book/ch08.html
-        """
-        http://www.nltk.org/book/ch10.html
-        The "reduction" of (36) to (37) is an extremely useful operation in simplifying semantic representations, and we shall use it a lot in the rest of this chapter. 
-        The operation is often called β-reduction. In order for it to be semantically justified, we want it to hold that λx. α(β) has the same semantic values as α[β/x]. 
-        This is indeed true, subject to a slight complication that we will come to shortly. In order to carry of β-reduction of expressions in NLTK, 
-        we can call the simplify() method
-        """
-        formula = tree.label()['SEM'].simplify()
+        #printTreeImage(tree)
+        #tree.draw()
+
+        formula = tree.label()['SEM'].simplify() # simplify() apply beta-reduction
+        print ("FOL: " + str(formula))
 
         # ---------------------------------------------
         # ----  Formula to sentence plan
+        # By starting from regular expressions, parts of the sentence (predicates) and their value (arguments) are identified.
+        # The translation of the arguments is performed and the generated sentence plan is used as input for the NLG phase.
         # ---------------------------------------------
-        planT = getSentencePlan(formula, tree, lex) # Translated plan
+        
+        planT = getSentencePlan(formula, tree, lex) # create translated sentence plan
 
-        savePlanToJSON(planT, sentences.index(s))
+        #savePlanToJSON(planT, sentences.index(s))
+        #print (planT)
 
-        # ---------------------------------------------
-        # ----  Sentence plan to traslated sentence
-        # ---------------------------------------------
-
-        print ("\n---\n")
+        print ("\n***\n")
 main()

@@ -5,11 +5,9 @@ import simplenlg.framework.NLGFactory;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.lexicon.italian.ITXMLLexicon;
 import simplenlg.phrasespec.NPPhraseSpec;
-import simplenlg.phrasespec.PPPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
 import simplenlg.phrasespec.VPPhraseSpec;
 import simplenlg.realiser.Realiser;
-import java.util.ArrayList;
 
 public class SentenceRealizer {
 
@@ -74,8 +72,6 @@ public class SentenceRealizer {
             clause.setObject(obj);
         } else if (!plan.get("compl").toString().equals("{}")) {
 
-            // TODO Prendere il genere del nome presente nel complemento (N) e settare l'aggettivo con il genere corretto
-
             JSONArray compl = (JSONArray) plan.get("compl");
 
             for (int i = 0; i < compl.size(); i++) {
@@ -88,6 +84,11 @@ public class SentenceRealizer {
         return realiser.realiseSentence(clause);
     }
 
+    /**
+     * Set verb tense
+     * @param clause
+     * @param tense
+     */
     private void setVerbTense(VPPhraseSpec clause, String tense) {
         if (tense.equals("pres")) {
             clause.setFeature(Feature.TENSE, Tense.PRESENT);
