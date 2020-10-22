@@ -3,11 +3,13 @@ from nltk.sem.logic import ExistsExpression, AndExpression, ApplicationExpressio
     IndividualVariableExpression
 
 """
-Transform a valid FOL formula in a simpleNLG sentence plan
+Transform a FOL formula in a sentence plan
 Input:
     formula: semantic formula of sentence (FOL)
     tree: tree
     lex: lexical dictionary (eng to ita translation)
+Output:
+    plan: lexicalized sentence plan 
 """
 def getSentencePlan(formula, tree, lex):
     template = getFormulaTemplate(str(formula))
